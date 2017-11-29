@@ -25,7 +25,7 @@ public class Factory
 	public static void init(ISource source) throws FactoryException
 	{
 		if (source == null)
-			throw new FactoryException("Source cannt be null");
+			throw new FactoryException("Source cannot be null");
 
 		if (object == null)
 		{

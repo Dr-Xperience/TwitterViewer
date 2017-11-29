@@ -3,7 +3,10 @@
  */
 package org.chatteron.demoproject.factory;
 
+import org.chatteron.demoproject.factory.exceptions.FactoryException;
 import org.chatteron.demoproject.io.IDatabase;
+import org.chatteron.demoproject.io.IOAuth;
+import org.chatteron.demoproject.io.ITwitterStream;
 
 /**
  * @author Dr.Xperience
@@ -11,6 +14,9 @@ import org.chatteron.demoproject.io.IDatabase;
  */
 public interface ISource
 {
-	IDatabase getDatabase() throws Exception;
+	IDatabase getDatabase() throws FactoryException;
+	IOAuth getOAuth() throws FactoryException;
+	ITwitterStream getTwitterStream() throws FactoryException;
+	
 	
 }

@@ -13,8 +13,16 @@ import java.util.List;
 
 public interface IDatabase
 {
-	void createConnection(String url, String username, String password)throws ClassNotFoundException,SQLException;
-	List<String> printDatabase() throws SQLException;
-	int insert(String... values)throws SQLException;	
+	void createConnection() throws ClassNotFoundException, SQLException;
+	
+	int insert(String... values)throws SQLException;
+	
+	String getApiKey() throws SQLException;
+	String getApiSecretKey() throws SQLException;
+	String getAppAccessToken() throws SQLException;
+	String getAppAccessTokenSecret() throws SQLException;
+	String getUserAccessToken() throws SQLException;
+	String getUserAccessTokenSecret() throws SQLException;
+	
 	
 }

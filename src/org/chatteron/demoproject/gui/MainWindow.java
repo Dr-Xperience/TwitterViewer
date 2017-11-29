@@ -1,23 +1,40 @@
 package org.chatteron.demoproject.gui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.util.ArrayDeque;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
+import org.chatteron.demoproject.factory.Factory;
+import org.chatteron.demoproject.factory.exceptions.FactoryException;
+import org.chatteron.demoproject.io.listeners.TweetStreamListener;
+import org.chatteron.demoproject.json.TwitterStreamJSON;
 
 public class MainWindow
 {
@@ -43,6 +60,12 @@ public class MainWindow
 
 	private stateScrollBar sb1 = stateScrollBar.doNothing;
 	private int mouseWheelRotationTab1 = 0;
+	private final JPanel panel_2 = new JPanel();
+	private final JLabel lblEnterAWord = new JLabel("Enter a word to search on Twitter");
+	private final JTextField textField = new JTextField();
+	private final JScrollPane scrollPane_2 = new JScrollPane();
+	private final JTextPane textPane = new JTextPane();
+	private final JButton btnSearch = new JButton("Search");
 
 	/**
 	 * Create the application.
@@ -59,8 +82,9 @@ public class MainWindow
 	 */
 	private void initialize()
 	{
+		textField.setColumns(10);
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 543, 339);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
 		tabbedPane.addChangeListener(new ChangeListener()
@@ -71,6 +95,99 @@ public class MainWindow
 		});
 
 		frame.getContentPane().add(tabbedPane);
+
+		tabbedPane.addTab("Twitter Search (Streaming)", null, panel_2, null);
+		GridBagLayout gbl_panel_2 = new GridBagLayout();
+		gbl_panel_2.columnWidths = new int[] { 222, 229, 0, 0 };
+		gbl_panel_2.rowHeights = new int[] { 35, 0, 0 };
+		gbl_panel_2.columnWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
+		gbl_panel_2.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		panel_2.setLayout(gbl_panel_2);
+
+		GridBagConstraints gbc_lblEnterAWord = new GridBagConstraints();
+		gbc_lblEnterAWord.fill = GridBagConstraints.BOTH;
+		gbc_lblEnterAWord.insets = new Insets(0, 0, 5, 5);
+		gbc_lblEnterAWord.gridx = 0;
+		gbc_lblEnterAWord.gridy = 0;
+		panel_2.add(lblEnterAWord, gbc_lblEnterAWord);
+
+		GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.insets = new Insets(0, 0, 5, 5);
+		gbc_textField.fill = GridBagConstraints.BOTH;
+		gbc_textField.gridx = 1;
+		gbc_textField.gridy = 0;
+		panel_2.add(textField, gbc_textField);
+
+		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
+		gbc_btnSearch.fill = GridBagConstraints.BOTH;
+		gbc_btnSearch.insets = new Insets(0, 0, 5, 0);
+		gbc_btnSearch.gridx = 2;
+		gbc_btnSearch.gridy = 0;
+		btnSearch.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				try
+				{
+					Factory.getFactory().getSource().getTwitterStream().streamData(textField.getText());
+					Factory.getFactory().getSource().getTwitterStream()
+							.addTweetStreamListerner(new TweetStreamListener()
+							{
+
+								@Override
+								public void streamRecieved(ArrayDeque<TwitterStreamJSON> ad)
+								{
+									for (TwitterStreamJSON j : ad)
+									{
+										StyledDocument doc = textPane.getStyledDocument();
+
+										// Define a keyword attribute
+
+										SimpleAttributeSet keyWord = new SimpleAttributeSet();										
+										StyleConstants.setBackground(keyWord, Color.YELLOW);
+										StyleConstants.setBold(keyWord, true);
+										
+										SimpleAttributeSet keyWord1 = new SimpleAttributeSet();
+										StyleConstants.setBold(keyWord, false);
+										
+
+										// Add some text
+
+										try
+										{											
+											doc.insertString(doc.getLength(),j.getName() , keyWord);
+											doc.insertString(doc.getLength(),j.getText() , keyWord1);
+										}
+										catch (Exception e)
+										{
+											System.out.println(e);
+										}
+
+									}
+
+								}
+							});
+				}
+				catch (URISyntaxException | SQLException | FactoryException e1)
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		panel_2.add(btnSearch, gbc_btnSearch);
+
+		GridBagConstraints gbc_scrollPane_2 = new GridBagConstraints();
+		gbc_scrollPane_2.gridwidth = 3;
+		gbc_scrollPane_2.insets = new Insets(0, 0, 0, 5);
+		gbc_scrollPane_2.fill = GridBagConstraints.BOTH;
+		gbc_scrollPane_2.gridx = 0;
+		gbc_scrollPane_2.gridy = 1;
+		panel_2.add(scrollPane_2, gbc_scrollPane_2);
+		textPane.setEditable(false);
+		textPane.setContentType("text/html");
+
+		scrollPane_2.setViewportView(textPane);
 
 		tabbedPane.addTab("Twitter Feed", null, scrollPane, null);
 
